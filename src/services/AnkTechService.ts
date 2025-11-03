@@ -36,6 +36,16 @@ export class AnkTechService {
       console.log('[AnkTech] 登录 API 响应:', response);
       
       if (response.code === 'SUCCESS') {
+        // 强制设置 wsPort 为 7788（因为服务器实际运行在 7788，而不是数据库中的 7777）
+        if (this.anktech.getSDKInstance()) {
+          const sdkInstance = this.anktech.getSDKInstance();
+          if (sdkInstance.options) {
+            console.log('[AnkTech] 原始 wsPort:', sdkInstance.options.wsPort);
+            sdkInstance.options.wsPort = 7788;
+            console.log('[AnkTech] 强制设置 wsPort 为:', sdkInstance.options.wsPort);
+          }
+        }
+        
         this.isConnected = true;
         this.setupMessageListener();
         console.log('[AnkTech] ✅ 登录成功');
@@ -300,6 +310,19 @@ export class AnkTechService {
    */
   getSDKInstance(): any {
     return this.anktech;
+  }
+  
+  /**
+   * 强制设置 WebSocket 端口（用于覆盖 API 返回的错误配置）
+   */
+  forceSetWsPort(port: number): void {
+    if (this.anktech) {
+      const sdkInstance = this.anktech as any;
+      if (sdkInstance.options) {
+        console.log('[AnkTech] 强制设置 wsPort:', port);
+        sdkInstance.options.wsPort = port;
+      }
+    }
   }
 }
 
