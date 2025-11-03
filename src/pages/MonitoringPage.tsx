@@ -50,12 +50,15 @@ export default function MonitoringPage() {
     return () => clearInterval(timer);
   }, []);
 
-  // 自动登录
+  // 自动登录（仅尝试一次）
   useEffect(() => {
-    if (!isLoggedIn && !isLoading) {
+    let hasTriedLogin = false;
+    
+    if (!isLoggedIn && !isLoading && !hasTriedLogin) {
+      hasTriedLogin = true;
       login();
     }
-  }, [isLoggedIn, isLoading, login]);
+  }, []); // 空依赖数组，只在挂载时执行一次
 
   // 打开视频
   const openVideo = (node: TreeNode) => {
