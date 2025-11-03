@@ -15,7 +15,7 @@ import type { TreeNode, Video } from '@/types/anktech';
 // 登录配置
 const LOGIN_CONFIG = {
   server: '10.10.18.242',  // 直接使用服务器地址
-  wsPort: 7777,            // WebSocket 端口（SDK 会自动获取）
+  wsPort: 7788,            // WebSocket 端口（实际监听在 7788，不是 7777）
   userId: 'admin',
   password: '123456',
   debug: true,
