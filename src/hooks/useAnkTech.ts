@@ -20,17 +20,21 @@ export function useAnkTech(options?: Options) {
   // 消息处理函数
   const handleMessage = useCallback((message: any) => {
     const CMD = message.CMD;
+    console.log('[useAnkTech] 处理消息 CMD:', CMD);
     
     switch (CMD) {
       case 30006: // 获取设备列表
+        console.log('[useAnkTech] 📷 收到设备列表:', message.CameraArray?.length, '个设备');
         setCameras(message.CameraArray || []);
         break;
       
       case 30007: // 获取通道列表
+        console.log('[useAnkTech] 📡 收到通道列表:', message.ChannelArray?.length, '个通道');
         setChannels(message.ChannelArray || []);
         break;
       
       case 30013: // 获取拼接列表
+        console.log('[useAnkTech] 🔗 收到拼接列表:', message.StitchServerArr?.length, '个拼接服务');
         setStitches(message.StitchServerArr || []);
         break;
       
@@ -83,26 +87,33 @@ export function useAnkTech(options?: Options) {
         break;
       
       case 900001: // WebSocket 连接成功
-        console.log('[useAnkTech] WebSocket 已连接');
+        console.log('[useAnkTech] ✅ WebSocket 已连接!');
+        console.log('[useAnkTech] 开始获取设备信息...');
         // 获取设备信息
         if (serviceRef.current) {
           serviceRef.current.getDeviceList();
+          console.log('[useAnkTech] → 已发送获取设备列表请求');
           serviceRef.current.getStitchList();
+          console.log('[useAnkTech] → 已发送获取拼接列表请求');
         }
         break;
       
       default:
-        console.log('[useAnkTech] 未处理的消息:', CMD);
+        console.log('[useAnkTech] ℹ️ 未处理的消息 CMD:', CMD, message);
     }
   }, []);
 
   // 登录
   const login = useCallback(async () => {
     if (!options) {
+      console.error('[useAnkTech] ❌ 缺少登录配置');
       setError('缺少登录配置');
       return false;
     }
 
+    console.log('[useAnkTech] 🚀 开始登录流程...');
+    console.log('[useAnkTech] 登录配置:', options);
+    
     setIsLoading(true);
     setError(null);
 
@@ -110,14 +121,20 @@ export function useAnkTech(options?: Options) {
       const service = getAnkTechService(options);
       serviceRef.current = service;
       
+      console.log('[useAnkTech] AnkTech 服务实例已创建');
+      
       // 添加消息监听器
       service.addMessageListener(handleMessage);
+      console.log('[useAnkTech] 消息监听器已添加');
       
       await service.login();
+      console.log('[useAnkTech] ✅ 登录成功');
       setIsLoggedIn(true);
       return true;
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : '登录失败';
+      console.error('[useAnkTech] ❌ 登录失败:', errorMsg);
+      console.error('[useAnkTech] 错误对象:', err);
       setError(errorMsg);
       return false;
     } finally {

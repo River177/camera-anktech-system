@@ -21,18 +21,38 @@ export class AnkTechService {
    */
   async login(): Promise<void> {
     try {
+      console.log('[AnkTech] 开始登录流程...');
+      console.log('[AnkTech] 配置信息:', {
+        server: this.options.server,
+        wsPort: this.options.wsPort,
+        userId: this.options.userId,
+        debug: this.options.debug,
+      });
+      
       this.anktech = new AnkTech(this.options);
+      console.log('[AnkTech] SDK 实例已创建');
+      
       const response = await this.anktech.login();
+      console.log('[AnkTech] 登录 API 响应:', response);
       
       if (response.code === 'SUCCESS') {
         this.isConnected = true;
         this.setupMessageListener();
-        console.log('[AnkTech] 登录成功');
+        console.log('[AnkTech] ✅ 登录成功');
+        console.log('[AnkTech] WebSocket 配置:', {
+          url: this.anktech.getSDKInstance?.()?.options?.messageWs?.url,
+          readyState: this.anktech.getSDKInstance?.()?.options?.messageWs?.instances?.readyState,
+        });
       } else {
-        throw new Error('登录失败');
+        throw new Error(`登录失败: ${response.message || '未知错误'}`);
       }
     } catch (error) {
-      console.error('[AnkTech] 登录错误:', error);
+      console.error('[AnkTech] ❌ 登录错误:', error);
+      console.error('[AnkTech] 错误详情:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       throw error;
     }
   }
@@ -58,21 +78,27 @@ export class AnkTechService {
    * 设置消息监听器
    */
   private setupMessageListener(): void {
-    if (!this.anktech) return;
+    if (!this.anktech) {
+      console.warn('[AnkTech] ⚠️ SDK 未初始化，无法设置消息监听器');
+      return;
+    }
 
+    console.log('[AnkTech] 设置消息监听器...');
     this.anktech.setOnMessageListener((event: string) => {
       try {
         const message = JSON.parse(event);
-        console.log('[AnkTech] 收到消息:', message.CMD);
+        console.log('[AnkTech] 📨 收到消息 CMD:', message.CMD, '完整消息:', message);
         
         // 通知所有监听器
         this.messageListeners.forEach(listener => {
           listener(message);
         });
       } catch (error) {
-        console.error('[AnkTech] 消息解析错误:', error);
+        console.error('[AnkTech] ❌ 消息解析错误:', error);
+        console.error('[AnkTech] 原始消息:', event);
       }
     });
+    console.log('[AnkTech] ✅ 消息监听器已设置');
   }
 
   /**
