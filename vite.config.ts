@@ -24,21 +24,20 @@ export default defineConfig({
     port: 3000,
     host: '0.0.0.0',
     proxy: {
+      // HTTP API 代理
       '/aqueti-api': {
         target: 'http://10.10.18.242:8081',
-        // target: 'http://127.0.0.1:8888',
         ws: false,
         changeOrigin: true,
         secure: false,
-        // rewrite: (path) => path.replace(/^\/path/, ''),
       },
-      // WebSocket 代理（如果需要）
-      // '/message': {
-      //   target: 'ws://192.168.12.88:8084',
-      //   ws: true,
-      //   changeOrigin: true,
-      //   secure: false,
-      // }
+      // WebSocket 代理 - 重要！
+      '/ws': {
+        target: 'ws://10.10.18.242:7777',
+        ws: true,
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 });

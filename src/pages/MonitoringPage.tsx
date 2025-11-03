@@ -14,7 +14,8 @@ import type { TreeNode, Video } from '@/types/anktech';
 
 // 登录配置
 const LOGIN_CONFIG = {
-  server: '10.10.18.242',  // AnkTech 服务器地址
+  server: window.location.hostname || 'localhost',  // 使用当前域名，通过代理转发
+  wsPort: Number(window.location.port) || 3000,     // 使用当前端口
   userId: 'admin',
   password: '123456',
   debug: true,
