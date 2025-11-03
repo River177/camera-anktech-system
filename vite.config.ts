@@ -31,13 +31,6 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
-      // WebSocket 代理 - 重要！
-      '/ws': {
-        target: 'ws://10.10.18.242:7777',
-        ws: true,
-        changeOrigin: true,
-        secure: false,
-      },
     },
   },
 });

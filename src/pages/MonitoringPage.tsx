@@ -14,8 +14,8 @@ import type { TreeNode, Video } from '@/types/anktech';
 
 // 登录配置
 const LOGIN_CONFIG = {
-  server: window.location.hostname || 'localhost',  // 使用当前域名，通过代理转发
-  wsPort: Number(window.location.port) || 3000,     // 使用当前端口
+  server: '10.10.18.242',  // 直接使用服务器地址
+  wsPort: 7777,            // WebSocket 端口（SDK 会自动获取）
   userId: 'admin',
   password: '123456',
   debug: true,
