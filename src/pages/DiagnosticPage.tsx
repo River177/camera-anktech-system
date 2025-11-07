@@ -14,7 +14,7 @@ export default function DiagnosticPage() {
   const [ws, setWs] = useState<WebSocket | null>(null);
 
   const SERVER = '10.10.18.242';
-  const WS_PORT = 7777;
+  const WS_PORT = 7777;  // 中心服务 WebSocket 端口
   const WS_URL = `ws://${SERVER}:${WS_PORT}`;
 
   const addLog = (message: string, type: 'info' | 'success' | 'error' = 'info') => {

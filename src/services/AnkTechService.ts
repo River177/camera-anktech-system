@@ -36,20 +36,49 @@ export class AnkTechService {
       console.log('[AnkTech] 登录 API 响应:', response);
       
       if (response.code === 'SUCCESS') {
-        // 强制设置 wsPort 为 7788（因为服务器实际运行在 7788，而不是数据库中的 7777）
-        if (this.anktech && (this.anktech as any).options) {
-          console.log('[AnkTech] 原始 wsPort:', (this.anktech as any).options.wsPort);
-          (this.anktech as any).options.wsPort = 7788;
-          console.log('[AnkTech] 强制设置 wsPort 为:', (this.anktech as any).options.wsPort);
-        }
+        const sdkInstance = this.anktech as any;
+        
+        console.log('[AnkTech] 原始 wsPort:', sdkInstance.options.wsPort);
+        
+        // 强制设置为 7788（不要手动初始化，让 SDK 自动处理）
+        sdkInstance.options.wsPort = 7788;
+        console.log('[AnkTech] 强制设置 wsPort 为:', 7788);
         
         this.isConnected = true;
         this.setupMessageListener();
         console.log('[AnkTech] ✅ 登录成功');
-        console.log('[AnkTech] WebSocket 配置:', {
-          url: this.anktech.getSDKInstance?.()?.options?.messageWs?.url,
-          readyState: this.anktech.getSDKInstance?.()?.options?.messageWs?.instances?.readyState,
-        });
+        
+        // 延迟 3 秒后检查并请求数据（给 WebSocket 足够时间自动连接）
+        setTimeout(() => {
+          const ws = sdkInstance.options?.messageWs?.instances;
+          console.log('[AnkTech] WebSocket 状态检查:', {
+            url: sdkInstance.options?.messageWs?.url,
+            port: sdkInstance.options?.wsPort,
+            readyState: ws?.readyState,
+            wsExists: !!ws,
+          });
+          
+          if (ws && ws.readyState === 1) {
+            console.log('[AnkTech] ✅ WebSocket 已连接，开始请求数据...');
+            this.getDeviceList();
+            this.getChannelList();
+            this.getStitchList();
+          } else if (ws && ws.readyState === 0) {
+            console.log('[AnkTech] ⏳ WebSocket 正在连接，再等待 2 秒...');
+            setTimeout(() => {
+              if (ws.readyState === 1) {
+                console.log('[AnkTech] ✅ WebSocket 连接成功！请求数据...');
+                this.getDeviceList();
+                this.getChannelList();
+                this.getStitchList();
+              } else {
+                console.error('[AnkTech] ❌ WebSocket 连接超时，readyState:', ws.readyState);
+              }
+            }, 2000);
+          } else {
+            console.error('[AnkTech] ❌ WebSocket 未正确初始化，readyState:', ws?.readyState);
+          }
+        }, 3000);
       } else {
         throw new Error(`登录失败: ${response.message || '未知错误'}`);
       }

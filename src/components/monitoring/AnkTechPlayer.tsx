@@ -35,13 +35,28 @@ export function AnkTechPlayer({
   const elementId = `anktech_video_${mediaId}`;
 
   useEffect(() => {
+    // 验证必需参数
     if (!mediaId || !mts) {
+      console.error('[AnkTechPlayer] ❌ 缺少必需参数:', {
+        mediaId,
+        mts,
+        elementId,
+      });
+      onError?.('缺少视频参数');
+      return;
+    }
+    
+    // 验证 mediaId 类型
+    if (typeof mediaId !== 'number' || mediaId === 0) {
+      console.error('[AnkTechPlayer] ❌ mediaId 无效:', mediaId, typeof mediaId);
+      onError?.('无效的视频 ID');
       return;
     }
 
     const ankTechService = getAnkTechService();
     
     if (!ankTechService.isConnectedToServer()) {
+      console.error('[AnkTechPlayer] ❌ SDK 未连接');
       onError?.('AnkTech SDK 未连接');
       return;
     }

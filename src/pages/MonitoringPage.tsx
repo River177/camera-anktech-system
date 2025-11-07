@@ -10,6 +10,7 @@ import { Settings, Maximize2, Camera as CameraIcon, LogOut } from 'lucide-react'
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { TreeNode, Video } from '@/types/anktech';
 
 // 登录配置
@@ -208,31 +209,67 @@ export default function MonitoringPage() {
           <Card className="w-80 bg-slate-900/80 border-slate-700 p-4 flex flex-col">
             <h2 className="text-lg font-semibold mb-4 text-slate-100">设备列表</h2>
             <ScrollArea className="flex-1">
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {treeData.map(node => (
-                  <div key={node.id} className="space-y-1">
-                    <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 transition-colors">
+                  <div key={node.id} className="space-y-2">
+                    {/* 设备头部 */}
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/50">
                       <CameraIcon className="w-4 h-4" style={{ color: node.status === 1 ? '#10b981' : '#ef4444' }} />
-                      <span className="flex-1 text-sm">{node.name}</span>
+                      <span className="flex-1 text-sm font-medium">{node.name}</span>
                       <Badge variant={node.status === 1 ? 'default' : 'secondary'} className="text-xs">
                         {node.status === 1 ? '在线' : '离线'}
                       </Badge>
                     </div>
                     
-                    {node.channels && node.channels.length > 0 && (
-                      <div className="ml-6 space-y-1">
-                        {node.channels.map(channel => (
-                          <button
-                            key={channel.id}
-                            onClick={() => openVideo(channel)}
-                            className="w-full flex items-center gap-2 p-2 rounded-lg bg-slate-800/30 hover:bg-blue-500/20 transition-colors text-left"
-                            disabled={channel.status !== 1}
-                          >
-                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: channel.status === 1 ? '#10b981' : '#6b7280' }} />
-                            <span className="flex-1 text-sm text-slate-300">{channel.name}</span>
-                          </button>
-                        ))}
+                    {/* ax52 使用下拉框选择子摄像头 */}
+                    {node.id === 'ax52' && node.channels && node.channels.length > 0 ? (
+                      <div className="ml-6">
+                        <Select
+                          onValueChange={(channelId) => {
+                            const channel = node.channels?.find(ch => ch.id === channelId);
+                            if (channel) openVideo(channel);
+                          }}
+                        >
+                          <SelectTrigger className="w-full bg-slate-800/50 border-slate-700 text-slate-200">
+                            <SelectValue placeholder={`选择子镜头 (${node.channels.length}个)`} />
+                          </SelectTrigger>
+                          <SelectContent className="bg-slate-800 border-slate-700 max-h-80">
+                            {node.channels.map(channel => (
+                              <SelectItem 
+                                key={channel.id} 
+                                value={channel.id}
+                                disabled={channel.status !== 1}
+                                className="text-slate-200 focus:bg-slate-700 focus:text-slate-100"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div 
+                                    className="w-2 h-2 rounded-full" 
+                                    style={{ backgroundColor: channel.status === 1 ? '#10b981' : '#6b7280' }}
+                                  />
+                                  <span>{channel.name}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
+                    ) : (
+                      /* 其他设备（如 akss55）保持原来的列表展示 */
+                      node.channels && node.channels.length > 0 && (
+                        <div className="ml-6 space-y-1">
+                          {node.channels.map(channel => (
+                            <button
+                              key={channel.id}
+                              onClick={() => openVideo(channel)}
+                              className="w-full flex items-center gap-2 p-2 rounded-lg bg-slate-800/30 hover:bg-blue-500/20 transition-colors text-left"
+                              disabled={channel.status !== 1}
+                            >
+                              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: channel.status === 1 ? '#10b981' : '#6b7280' }} />
+                              <span className="flex-1 text-sm text-slate-300">{channel.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )
                     )}
                   </div>
                 ))}
